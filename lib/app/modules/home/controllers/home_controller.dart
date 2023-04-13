@@ -54,10 +54,12 @@ class HomeController extends GetxController {
       }
       final response = await http.get(
           Uri.parse(
-            '$SERVER_URI/private/items/upc/${scannedCode.value}',
+            'https://api.upcitemdb.com/prod/trial/lookup?upc=${scannedCode.value}',
           ),
           headers: <String, String>{
-            'Authorisation': storage.read("token"),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Accept-Encoding': 'gzip,deflate',
           });
 
       if (response.statusCode == 200) {
