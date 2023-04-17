@@ -139,7 +139,16 @@ class HomeController extends GetxController {
     loadItems();
   }
 
-  void exportJson() async {
+  exportJson() async {
+    if (staticItemList.isEmpty) {
+      return Get.snackbar(
+        "SAA",
+        "You don't have any items to export.",
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.red),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.grey,
+      );
+    }
     // Convert staticItemList to JSON string
     String jsonString = jsonEncode(staticItemList);
 

@@ -44,6 +44,11 @@ class HomeView extends GetView<HomeController> {
               ),
               onTap: () => controller.showDeletionDialog(context),
             ),
+            const ListTile(
+              title: Text(
+                'About',
+              ),
+            ),
           ],
         ),
       ),
