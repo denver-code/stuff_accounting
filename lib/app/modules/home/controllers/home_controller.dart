@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:get/get.dart';
@@ -18,12 +19,12 @@ class HomeController extends GetxController {
   // Variables
   GetStorage storage = GetStorage();
   final searchController = TextEditingController();
-  List<Item> staticItemList = <Item>[];
+  List<Item> staticItemList = <Item>[].obs;
   RxList<Item> itemList = RxList<Item>();
-
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   RxString scannedCode = RxString('');
 
-  bool isUpcExist(List<Item> items, String targetUpc) {
+  bool isUpcExist(List<Item> items, targetUpc) {
     for (var item in items) {
       if (item.upc == targetUpc) {
         return true;
@@ -83,9 +84,14 @@ class HomeController extends GetxController {
   }
 
   deleteItem(String itemId) async {
+    loadItems();
     itemList.removeWhere((item) => item.id == itemId);
     saveItems(itemList);
     loadItems();
+
+    if (searchController.text != "") {
+      searchItems(searchQuery: searchController.text);
+    }
     return Get.snackbar("SAA", "Item deleted successfully!",
         icon: const Icon(Icons.delete_sweep_rounded, color: Colors.white),
         snackPosition: SnackPosition.BOTTOM,
@@ -99,11 +105,18 @@ class HomeController extends GetxController {
       final file = File(result.files.single.path!);
       final contents = await file.readAsString();
       final data = json.decode(contents) as List;
+      List itemsJson = [];
       for (var item in data) {
-        item["id"] = generateID();
+        if (!isUpcExist(staticItemList, item["upc"]) || item["upc"] == "") {
+          item["id"] = generateID();
+          if (!item.containsKey("tag") || item["tag"] == "") {
+            item["tag"] = "Others";
+          }
+          itemsJson.add(item);
+        }
       }
 
-      List items = data.map((json) => Item.fromJson(json)).toList();
+      List items = itemsJson.map((json) => Item.fromJson(json)).toList();
       for (var item in items) {
         itemList.add(item);
       }
@@ -239,88 +252,119 @@ class HomeController extends GetxController {
   Widget feedContent() {
     if (itemList.isEmpty) {
       return Expanded(
+        child: SingleChildScrollView(
           child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text('List of items is empty :[', style: TextStyle(fontSize: 17)),
-          SizedBox(
-            height: 10,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              SizedBox(
+                height: 50,
+              ),
+              Text('List of items is empty :[', style: TextStyle(fontSize: 17)),
+              SizedBox(
+                height: 10,
+              ),
+              Divider(),
+              Text('Some useful tips:', style: TextStyle(fontSize: 14)),
+              Divider(),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(
+                  'Boost your experience by adding items to your collection! Simply tap on the Plus sign or scan a QR code using the button located in the bottom right corner of the screen.',
+                  style: TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Divider(),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(
+                  'Once you will add some items - you will be able to see them instead this text, also you can use Search box to find something specific!',
+                  style: TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Divider(),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(
+                  'If you sure that here should be your stuff - try refresh the feed using Refresh button on top-right corner of the screen.',
+                  style: TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Divider(),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(
+                  'You can import or export items using SAA Fast Panel, just tap on menu icon in top-left corner of the screen',
+                  style: TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Divider(),
+            ],
           ),
-          Divider(),
-          Text('Some useful tips:', style: TextStyle(fontSize: 14)),
-          Divider(),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.0),
-            child: Text(
-              'Boost your experience by adding items to your collection! Simply tap on the Plus sign or scan a QR code using the button located in the bottom right corner of the screen.',
-              style: TextStyle(fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Divider(),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.0),
-            child: Text(
-              'Once you will add some items - you will be able to see them instead this text, also you can use Search box to find something specific!',
-              style: TextStyle(fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Divider(),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.0),
-            child: Text(
-              'If you sure that here should be your stuff - try refresh the feed using Refresh button on top-right corner of the screen.',
-              style: TextStyle(fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Divider(),
-        ],
-      ));
+        ),
+      );
     } else {
       return Expanded(
         child: Obx(
           () => ListView(
             children: itemList.map((item) {
-              return Dismissible(
-                  key: Key(item.id), // Use a unique key for each item
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    color: Colors.red,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: const [
-                          Icon(
-                            Icons.delete,
-                            color: Colors.white,
-                          ),
-                          Text(
-                            "Delete",
-                            style: TextStyle(
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Dismissible(
+                    key: Key(item.id), // Use a unique key for each item
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      color: Colors.red,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: const [
+                            Icon(
+                              Icons.delete,
                               color: Colors.white,
-                              fontWeight: FontWeight.bold,
                             ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ],
+                            Text(
+                              "Delete",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.right,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  onDismissed: (direction) {
-                    deleteItem(item.id);
-                  },
-                  child: ListTile(
-                    title: Text(item.title),
-                    onTap: () {
-                      Get.toNamed(
-                        Routes.DETAIL,
-                        arguments: item,
-                      );
+                    onDismissed: (direction) {
+                      deleteItem(item.id);
                     },
-                  ));
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                      ),
+                      child: ListTile(
+                        title: Text(item.title),
+                        subtitle: Text(
+                          item.description,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Container(
+                          child: Text(item.tag ?? "Others"),
+                        ),
+                        onTap: () {
+                          Get.toNamed(
+                            Routes.DETAIL,
+                            arguments: item,
+                          );
+                        },
+                      ),
+                    )),
+              );
             }).toList(),
           ),
         ),

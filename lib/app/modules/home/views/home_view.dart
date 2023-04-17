@@ -1,11 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 
 import 'package:stuff_accounting_app/app/internal/hex2color.dart';
-import 'package:stuff_accounting_app/app/routes/app_pages.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -15,19 +13,21 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: HexColor.fromHex("#f5f5f5"),
+      key: controller.scaffoldKey,
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        title: const Text('My Collection'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              controller.loadItems();
-            },
-          ),
-        ],
-      ),
+      // appBar: AppBar(
+      //   title: const Text('My Collection'),
+      //   centerTitle: true,
+      //   actions: [
+      //     IconButton(
+      //       icon: const Icon(Icons.refresh),
+      //       onPressed: () {
+      //         controller.loadItems();
+      //       },
+      //     ),
+      //   ],
+      // ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -49,103 +49,166 @@ class HomeView extends GetView<HomeController> {
               title: const Text('Export Json'),
               onTap: () => controller.exportJson(),
             ),
-            (() {
-              if (kDebugMode) {
-                return ListTile(
-                  title: const Text(
-                    'Clear Collection',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  onTap: () => controller.clearItems(),
-                );
-              } else {
-                return Container();
-              }
-            }()),
+            ListTile(
+              title: const Text(
+                'Clear Collection',
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: () => controller.clearItems(),
+            ),
           ],
         ),
       ),
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Obx(() => controller.feedContent()),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    width: Get.width / 1.7,
-                    height: Get.height / 15.5,
-                    decoration: const BoxDecoration(
-                      color: Color.fromRGBO(255, 255, 255, 1),
-                      borderRadius: BorderRadius.all(Radius.circular(9)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Color.fromRGBO(0, 0, 0, 0.15000000596046448),
-                            offset: Offset(0, 4),
-                            blurRadius: 8)
-                      ],
-                    ),
-                    child: TextField(
-                        onChanged: ((value) {
-                          controller.searchItems(searchQuery: value);
-                        }),
-                        controller: controller.searchController,
-                        decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              controller.searchController.clear();
-                              controller.searchItems(searchQuery: "");
-                            },
-                          ),
-                          floatingLabelBehavior: FloatingLabelBehavior.never,
-                          disabledBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                            color: Colors.transparent,
-                          )),
-                          enabledBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                            color: Colors.transparent,
-                          )),
-                          border: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                            color: Colors.transparent,
-                          )),
-                          focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                            color: Colors.transparent,
-                          )),
-                          labelStyle: TextStyle(
-                              color: HexColor.fromHex("#343237"),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400),
-                          hintStyle: TextStyle(
-                              color: HexColor.fromHex("#828282"),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400),
-                          filled: false,
-                          fillColor: Colors.transparent,
-                          labelText: "Search",
-                          hintText: "Death Stranding",
-                        )),
+                  IconButton(
+                    iconSize: 35,
+                    color: HexColor.fromHex("#262626"),
+                    icon: const Icon(Icons.menu_open_rounded),
+                    onPressed: () {
+                      controller.scaffoldKey.currentState?.openDrawer();
+                    },
                   ),
-                  FloatingActionButton(
-                    heroTag: 'upc_adder',
-                    onPressed: controller.scanBarcode,
-                    child: const Icon(Icons.qr_code_rounded),
+                  IconButton(
+                    iconSize: 35,
+                    color: HexColor.fromHex("#262626"),
+                    icon: const Icon(Icons.refresh_rounded),
+                    onPressed: () {
+                      controller.loadItems();
+                    },
                   ),
-                  FloatingActionButton(
-                    onPressed: () => controller.showAddItemDialog(context),
-                    child: const Icon(Icons.add),
-                  )
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.only(left: 20.0, bottom: 15, top: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Welcome, mate!",
+                    style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: HexColor.fromHex("#262626")),
+                  ),
+                  Text(
+                    "Here's your collection:",
+                    style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: HexColor.fromHex("#262626")),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding:
+                  const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 15),
+              child: Container(
+                width: Get.width,
+                height: Get.height / 15.5,
+                decoration: const BoxDecoration(
+                  color: Color.fromRGBO(255, 255, 255, 1),
+                  borderRadius: BorderRadius.all(Radius.circular(9)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.15000000596046448),
+                        offset: Offset(0, 4),
+                        blurRadius: 8)
+                  ],
+                ),
+                child: TextField(
+                    onChanged: ((value) {
+                      controller.searchItems(searchQuery: value);
+                    }),
+                    controller: controller.searchController,
+                    decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          controller.searchController.clear();
+                          controller.searchItems(searchQuery: "");
+                        },
+                      ),
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                      disabledBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.transparent,
+                      )),
+                      enabledBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.transparent,
+                      )),
+                      border: const OutlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.transparent,
+                      )),
+                      focusedBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.transparent,
+                      )),
+                      labelStyle: TextStyle(
+                          color: HexColor.fromHex("#343237"),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400),
+                      hintStyle: TextStyle(
+                          color: HexColor.fromHex("#828282"),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400),
+                      filled: false,
+                      fillColor: Colors.transparent,
+                      labelText: "Search",
+                      hintText: "Death Stranding",
+                    )),
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: Container(
+                decoration: BoxDecoration(color: HexColor.fromHex("#262626")),
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Obx(() => Text(
+                      "Total amount of items in your collection: ${controller.staticItemList.length}",
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12))),
+                ),
+              ),
+            ),
+            Obx(() => controller.feedContent()),
           ],
         ),
       ),
+      floatingActionButton: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              onPressed: () => controller.showAddItemDialog(context),
+              backgroundColor: HexColor.fromHex("#262626"),
+              child: const Icon(Icons.add),
+            ),
+            const SizedBox(
+              height: 15,
+            ),
+            FloatingActionButton(
+              heroTag: 'upc_adder',
+              backgroundColor: HexColor.fromHex("#262626"),
+              onPressed: controller.scanBarcode,
+              child: const Icon(Icons.qr_code_rounded),
+            ),
+          ]),
     );
   }
 }
