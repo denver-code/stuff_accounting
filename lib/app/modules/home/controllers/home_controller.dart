@@ -250,6 +250,60 @@ class HomeController extends GetxController {
     );
   }
 
+  void showDeletionDialog(BuildContext context) async {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: const Text("DELETE ALL ITEMS?",
+              style: TextStyle(color: Colors.red)),
+          content: Column(
+            children: const [
+              Text("ARE YOU SURE THAT YOU WANT DELETE ALL YOUR STUFF?"),
+              Text("YOU WILL NOT BE ABLE TO UNDO OR CANCEL THAT PROCESS"),
+            ],
+          ),
+          actions: [
+            CupertinoDialogAction(
+              child: const Text(
+                'DELETE',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () {
+                clearItems();
+                Navigator.pop(context);
+                Get.snackbar(
+                  "SAA",
+                  "All items has been deleted!",
+                  icon: const Icon(Icons.delete_forever_rounded,
+                      color: Colors.white),
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.grey,
+                );
+                scaffoldKey.currentState?.closeDrawer();
+              },
+            ),
+            CupertinoDialogAction(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.pop(context);
+                Get.snackbar(
+                  "SAA",
+                  "We glad that you change your mind!",
+                  icon: const Icon(Icons.accessibility_new_sharp,
+                      color: Colors.white),
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.grey,
+                );
+                scaffoldKey.currentState?.closeDrawer();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget feedContent() {
     if (itemList.isEmpty) {
       return Expanded(

@@ -42,7 +42,7 @@ class HomeView extends GetView<HomeController> {
                 'Clear Collection',
                 style: TextStyle(color: Colors.red),
               ),
-              onTap: () => controller.clearItems(),
+              onTap: () => controller.showDeletionDialog(context),
             ),
           ],
         ),
