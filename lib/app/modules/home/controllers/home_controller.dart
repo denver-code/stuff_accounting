@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
-
+import 'package:path_provider/path_provider.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -13,8 +11,8 @@ import 'package:http/http.dart' as http;
 
 import 'package:stuff_accounting_app/app/internal/models/item.dart';
 import 'package:stuff_accounting_app/app/routes/app_pages.dart';
-import 'package:stuff_accounting_app/config.dart';
 import 'package:uuid/uuid.dart';
+import 'package:share/share.dart';
 
 class HomeController extends GetxController {
   // Variables
@@ -59,15 +57,9 @@ class HomeController extends GetxController {
         Uri.parse('https://api.upcitemdb.com/prod/trial/lookup?upc=$ucp'),
         headers: headers);
     final data = jsonDecode(response.body);
-
-    // if (response.statusCode == 404 || response.statusCode == 400) {
-
-    // }
-
     if (data['items'].isEmpty) {
       return false;
     }
-
     data['items'][0].remove('offers');
 
     return data['items'][0];
@@ -131,6 +123,22 @@ class HomeController extends GetxController {
     itemList.clear();
     saveItems(itemList);
     loadItems();
+  }
+
+  void exportJson() async {
+    // Convert staticItemList to JSON string
+    String jsonString = jsonEncode(staticItemList);
+
+    // Create export file in app's document directory
+    Directory path = (await getApplicationDocumentsDirectory());
+
+    File exportFile = File('${path.path}/export.json');
+
+    // Write JSON string to export file
+    await exportFile.writeAsString(jsonString);
+
+    // Share export file with user
+    await Share.shareFiles([exportFile.path], text: 'Here are my items!');
   }
   // Search
 

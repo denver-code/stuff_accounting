@@ -45,8 +45,9 @@ class HomeView extends GetView<HomeController> {
               title: const Text('Import Json'),
               onTap: () => controller.loadJson(),
             ),
-            const ListTile(
+            ListTile(
               title: const Text('Export Json'),
+              onTap: () => controller.exportJson(),
             ),
             (() {
               if (kDebugMode) {
