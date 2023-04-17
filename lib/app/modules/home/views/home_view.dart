@@ -112,7 +112,7 @@ class HomeView extends GetView<HomeController> {
                           filled: false,
                           fillColor: Colors.transparent,
                           labelText: "Search",
-                          hintText: "The Last Of Us 2",
+                          hintText: "Death Stranding",
                         )),
                   ),
                   FloatingActionButton(

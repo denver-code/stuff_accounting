@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:stuff_accounting_app/app/internal/models/item.dart';
 import 'package:stuff_accounting_app/app/routes/app_pages.dart';
 import 'package:stuff_accounting_app/config.dart';
+import 'package:uuid/uuid.dart';
 
 class HomeController extends GetxController {
   // Variables
@@ -28,6 +29,20 @@ class HomeController extends GetxController {
       }
     }
     return false;
+  }
+
+  String generateID() {
+    final uuid = Uuid();
+
+    String newId;
+    bool isUniqueId;
+
+    do {
+      newId = uuid.v4();
+      isUniqueId = staticItemList.every((item) => item.id != newId);
+    } while (!isUniqueId);
+
+    return newId;
   }
 
   Future getItem(String ucp) async {
@@ -157,7 +172,7 @@ class HomeController extends GetxController {
                   'upc': "No UCP",
                   'owner': "Admin",
                   'tag': "Others",
-                  'id': "fuygregiuhsdgisdhfgi",
+                  'id': generateID(),
                 });
                 itemList.add(item);
                 saveItems(itemList);
@@ -298,30 +313,44 @@ class HomeController extends GetxController {
       final product = await getItem(scannedCode.value);
 
       if (product == false) {
-        print('Product not found.');
+        return Get.snackbar(
+          "SAA",
+          "Looks like Item are not exist in OpenUPC Database, but you can add item manually using Plus button",
+          icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.grey,
+        );
       } else {
-        print('Product details: $product');
-      }
+        // print('Product details: $product');
 
-      // if (200 == 200) {
-      //   Item item = Item.fromJson({});
-      //   return Get.snackbar(
-      //     "SAA",
-      //     "We added ${item.title} to your collection!",
-      //     icon:
-      //         const Icon(Icons.my_library_books_outlined, color: Colors.white),
-      //     snackPosition: SnackPosition.BOTTOM,
-      //     backgroundColor: Colors.grey,
-      //   );
-      // } else {
-      //   return Get.snackbar(
-      //     "SAA",
-      //     "Looks like Item are not exist or we don't have it in our DataBase, you also can try look up by search!",
-      //     icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
-      //     snackPosition: SnackPosition.BOTTOM,
-      //     backgroundColor: Colors.grey,
-      //   );
-      // }
+        String picture = "";
+        if (product["images"].isNotEmpty) {
+          picture = product["images"][0];
+        }
+
+        Item item = Item.fromJson({
+          "id": generateID(),
+          "title": product["title"],
+          "description": product["description"],
+          "picture": picture,
+          "owner": "Item",
+          'tag': "Others",
+          "upc": scannedCode.value
+        });
+
+        itemList.add(item);
+        saveItems(itemList);
+        loadItems();
+
+        return Get.snackbar(
+          "SAA",
+          "We added ${item.title} to your collection!",
+          icon:
+              const Icon(Icons.my_library_books_outlined, color: Colors.white),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.grey,
+        );
+      }
     } on Exception {
       return;
     }
