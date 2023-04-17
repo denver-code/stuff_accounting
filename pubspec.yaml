@@ -15,6 +15,7 @@ dependencies:
   http: ^0.13.5
   barcode_scan2: ^4.2.4
   uuid: ^3.0.7
+  file_picker: ^5.2.9
 
 dev_dependencies: 
   flutter_lints: ^2.0.0

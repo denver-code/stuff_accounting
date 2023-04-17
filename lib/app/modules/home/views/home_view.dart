@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -41,11 +42,25 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
             ListTile(
-              title: const Text('Import'),
+              title: const Text('Import Json'),
+              onTap: () => controller.loadJson(),
             ),
-            ListTile(
-              title: const Text('Export'),
+            const ListTile(
+              title: const Text('Export Json'),
             ),
+            (() {
+              if (kDebugMode) {
+                return ListTile(
+                  title: const Text(
+                    'Clear Collection',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () => controller.clearItems(),
+                );
+              } else {
+                return Container();
+              }
+            }()),
           ],
         ),
       ),

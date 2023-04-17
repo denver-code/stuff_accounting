@@ -1,7 +1,10 @@
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:get/get.dart';
@@ -98,6 +101,37 @@ class HomeController extends GetxController {
         duration: const Duration(milliseconds: 1000));
   }
 
+  loadJson() async {
+    final result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      final file = File(result.files.single.path!);
+      final contents = await file.readAsString();
+      final data = json.decode(contents) as List;
+      for (var item in data) {
+        item["id"] = generateID();
+      }
+
+      List items = data.map((json) => Item.fromJson(json)).toList();
+      for (var item in items) {
+        itemList.add(item);
+      }
+      saveItems(itemList);
+      loadItems();
+      Get.snackbar(
+        "SAA",
+        "All items imported successfully!",
+        icon: const Icon(Icons.close_fullscreen_outlined, color: Colors.white),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.grey,
+      );
+    }
+  }
+
+  void clearItems() {
+    itemList.clear();
+    saveItems(itemList);
+    loadItems();
+  }
   // Search
 
   void searchItems({searchQuery}) {
