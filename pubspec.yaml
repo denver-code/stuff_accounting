@@ -17,6 +17,7 @@ dependencies:
   uuid: ^3.0.7
   file_picker: ^5.2.9
   share: ^2.0.4
+  flutter_expandable_fab: ^1.7.1
 
 dev_dependencies: 
   flutter_lints: ^2.0.0

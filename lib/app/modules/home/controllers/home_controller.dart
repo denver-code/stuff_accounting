@@ -9,6 +9,7 @@ import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:stuff_accounting_app/app/internal/hex2color.dart';
 
 import 'package:stuff_accounting_app/app/internal/models/item.dart';
 import 'package:stuff_accounting_app/app/routes/app_pages.dart';
@@ -354,7 +355,16 @@ class HomeController extends GetxController {
                           overflow: TextOverflow.ellipsis,
                         ),
                         trailing: Container(
-                          child: Text(item.tag ?? "Others"),
+                          decoration: BoxDecoration(
+                              color: HexColor.fromHex("#262626"),
+                              borderRadius: BorderRadius.circular(100)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              item.tag,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
                         ),
                         onTap: () {
                           Get.toNamed(

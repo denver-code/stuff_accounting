@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:get/get.dart';
 
 import 'package:stuff_accounting_app/app/internal/hex2color.dart';
@@ -16,18 +16,6 @@ class HomeView extends GetView<HomeController> {
       backgroundColor: HexColor.fromHex("#f5f5f5"),
       key: controller.scaffoldKey,
       resizeToAvoidBottomInset: true,
-      // appBar: AppBar(
-      //   title: const Text('My Collection'),
-      //   centerTitle: true,
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.refresh),
-      //       onPressed: () {
-      //         controller.loadItems();
-      //       },
-      //     ),
-      //   ],
-      // ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -190,25 +178,36 @@ class HomeView extends GetView<HomeController> {
           ],
         ),
       ),
-      floatingActionButton: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FloatingActionButton(
-              onPressed: () => controller.showAddItemDialog(context),
-              backgroundColor: HexColor.fromHex("#262626"),
-              child: const Icon(Icons.add),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            FloatingActionButton(
-              heroTag: 'upc_adder',
-              backgroundColor: HexColor.fromHex("#262626"),
-              onPressed: controller.scanBarcode,
-              child: const Icon(Icons.qr_code_rounded),
-            ),
-          ]),
+      floatingActionButtonLocation: ExpandableFab.location,
+      floatingActionButton: ExpandableFab(
+        type: ExpandableFabType.up,
+        distance: 70,
+        closeButtonStyle: ExpandableFabCloseButtonStyle(
+            backgroundColor: HexColor.fromHex("#3d3d3d")),
+        backgroundColor: HexColor.fromHex("#3d3d3d"),
+        children: [
+          FloatingActionButton(
+            onPressed: () => controller.showAddItemDialog(context),
+            backgroundColor: HexColor.fromHex("#3d3d3d"),
+            child: const Icon(Icons.add),
+          ),
+          // const SizedBox(
+          //   height: 15,
+          // ),
+          FloatingActionButton(
+            heroTag: 'upc_adder',
+            backgroundColor: HexColor.fromHex("3d3d3d"),
+            onPressed: controller.scanBarcode,
+            child: const Icon(Icons.qr_code_rounded),
+          ),
+        ],
+      ),
+      // floatingActionButton: Column(
+      //     crossAxisAlignment: CrossAxisAlignment.end,
+      //     mainAxisAlignment: MainAxisAlignment.end,
+      //     children: [
+
+      //     ]),
     );
   }
 }
