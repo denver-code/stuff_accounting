@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:stuff_accounting_app/app/internal/hex2color.dart';
 
 import 'package:stuff_accounting_app/app/internal/models/item.dart';
 
@@ -14,6 +15,7 @@ class DetailView extends GetView<DetailController> {
     final Item item = Get.arguments;
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: HexColor.fromHex("#262626"),
         title: const Text("Detail of Item"),
       ),
       body: SafeArea(
