@@ -22,7 +22,7 @@ class HomeView extends GetView<HomeController> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              controller.refreshAll();
+              controller.loadItems();
             },
           ),
         ],
@@ -42,15 +42,9 @@ class HomeView extends GetView<HomeController> {
             ),
             ListTile(
               title: const Text('Import'),
-              onTap: controller.logout,
             ),
             ListTile(
               title: const Text('Export'),
-              onTap: controller.logout,
-            ),
-            ListTile(
-              title: const Text('Log Out'),
-              onTap: controller.logout,
             ),
           ],
         ),
@@ -58,52 +52,7 @@ class HomeView extends GetView<HomeController> {
       body: SafeArea(
         child: Column(
           children: [
-            Expanded(
-              child: Obx(
-                () => ListView(
-                  children: controller.itemList.map((item) {
-                    return Dismissible(
-                        key: Key(item.id), // Use a unique key for each item
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          color: Colors.red,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: const [
-                                Icon(
-                                  Icons.delete,
-                                  color: Colors.white,
-                                ),
-                                Text(
-                                  "Delete",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.right,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        onDismissed: (direction) {
-                          controller.deleteItem(item.id);
-                        },
-                        child: ListTile(
-                          title: Text(item.title),
-                          onTap: () {
-                            Get.toNamed(
-                              Routes.DETAIL,
-                              arguments: item,
-                            );
-                          },
-                        ));
-                  }).toList(),
-                ),
-              ),
-            ),
+            Obx(() => controller.feedContent()),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
               child: Row(

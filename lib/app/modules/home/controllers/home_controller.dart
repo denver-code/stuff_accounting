@@ -13,6 +13,7 @@ import 'package:stuff_accounting_app/app/routes/app_pages.dart';
 import 'package:stuff_accounting_app/config.dart';
 
 class HomeController extends GetxController {
+  // Variables
   GetStorage storage = GetStorage();
   final searchController = TextEditingController();
   List<Item> staticItemList = <Item>[];
@@ -29,85 +30,32 @@ class HomeController extends GetxController {
     return false;
   }
 
-  scanBarcode() async {
-    try {
-      final result = await BarcodeScanner.scan();
-      scannedCode.value = result.rawContent;
-      if (scannedCode.value.isEmpty) {
-        return Get.snackbar(
-          "SAA",
-          "Looks like your UPC Barcode are wrong ;[",
-          icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.grey,
-        );
-      }
-      if (isUpcExist(staticItemList, scannedCode.value)) {
-        return Get.snackbar(
-          "SAA",
-          "Looks like this item already in your list!",
-          icon:
-              const Icon(Icons.my_library_books_outlined, color: Colors.white),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.grey,
-        );
-      }
-      final response = await http.get(
-          Uri.parse(
-            'https://api.upcitemdb.com/prod/trial/lookup?upc=${scannedCode.value}',
-          ),
-          headers: <String, String>{
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Accept-Encoding': 'gzip,deflate',
-          });
+  Future getItem(String ucp) async {
+    final headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Accept-Encoding': 'gzip,deflate',
+    };
 
-      if (response.statusCode == 200) {
-        Item item = Item.fromJson(json.decode(response.body));
-        refreshAll();
-        return Get.snackbar(
-          "SAA",
-          "We added ${item.title} to your collection!",
-          icon:
-              const Icon(Icons.my_library_books_outlined, color: Colors.white),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.grey,
-        );
-      } else {
-        return Get.snackbar(
-          "SAA",
-          "Looks like Item are not exist or we don't have it in our DataBase, you also can try look up by search!",
-          icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.grey,
-        );
-      }
-    } on Exception {
-      return;
-    }
-  }
-
-  logout() async {
-    storage.remove("token");
-    Get.offAndToNamed(Routes.AUTHORISATION);
-  }
-
-  Future<List<Item>> fetchItems() async {
     final response = await http.get(
-        Uri.parse(
-          '$SERVER_URI/private/items/my/',
-        ),
-        headers: <String, String>{
-          'Authorisation': storage.read("token"),
-        });
+        Uri.parse('https://api.upcitemdb.com/prod/trial/lookup?upc=$ucp'),
+        headers: headers);
+    final data = jsonDecode(response.body);
 
-    if (response.statusCode == 200) {
-      final List<dynamic> jsonList = json.decode(response.body);
-      return jsonList.map((json) => Item.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to fetch items');
+    // if (response.statusCode == 404 || response.statusCode == 400) {
+
+    // }
+
+    if (data['items'].isEmpty) {
+      return false;
     }
+
+    data['items'][0].remove('offers');
+
+    return data['items'][0];
   }
+
+  //  Items operation
 
   void saveItems(List<Item> items) {
     final itemListJson = items.map((item) => item.toJson()).toList();
@@ -124,6 +72,19 @@ class HomeController extends GetxController {
     }
   }
 
+  deleteItem(String itemId) async {
+    itemList.removeWhere((item) => item.id == itemId);
+    saveItems(itemList);
+    loadItems();
+    return Get.snackbar("SAA", "Item deleted successfully!",
+        icon: const Icon(Icons.delete_sweep_rounded, color: Colors.white),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.grey,
+        duration: const Duration(milliseconds: 1000));
+  }
+
+  // Search
+
   void searchItems({searchQuery}) {
     final query = searchQuery.toLowerCase();
     if (query == "") {
@@ -134,46 +95,29 @@ class HomeController extends GetxController {
       final descriptionLower = item.description.toLowerCase();
       return titleLower.contains(query) || descriptionLower.contains(query);
     }).toList();
-
-    if (filteredItems.isEmpty) {
-      filteredItems.add(Item.fromJson({
-        'title': "Looks like there are no items that meet your querry",
-        'description': "",
-        'picture': "picture",
-        'upc': "upc",
-        'owner': "owner",
-        'tag': "tag",
-        'id': "id",
-      }));
-    }
     itemList.assignAll(filteredItems);
   }
 
-  deleteItem(String itemId) async {
-    final response = await http.delete(
-        Uri.parse(
-          '$SERVER_URI/private/items/$itemId',
-        ),
-        headers: <String, String>{
-          'Authorisation': storage.read("token"),
-        });
-    if (response.statusCode == 200) {
-      refreshAll();
-      return Get.snackbar("SAA", "Item deleted successfully!",
-          icon: const Icon(Icons.delete_sweep_rounded, color: Colors.white),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.grey,
-          duration: const Duration(seconds: 1));
-    } else {
-      return Get.snackbar(
-        "SAA",
-        "Looks like something went wrong..",
-        icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.grey,
-      );
-    }
+  void clearSearch() {
+    searchController.clear();
+    loadItems();
   }
+
+  // General
+
+  @override
+  void onInit() async {
+    super.onInit();
+    loadItems();
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    super.onClose();
+  }
+
+  // Widgets
 
   void showAddItemDialog(BuildContext context) async {
     showCupertinoDialog(
@@ -204,37 +148,28 @@ class HomeController extends GetxController {
             ),
             CupertinoDialogAction(
               child: const Text('Create'),
-              onPressed: () async {
-                Map payload = {"title": title, "description": description};
-                final response = await http.post(
-                  Uri.parse('$SERVER_URI/private/items/new'),
-                  headers: <String, String>{
-                    'Content-Type': 'application/json; charset=UTF-8',
-                    "Authorisation": storage.read("token")
-                  },
-                  body: jsonEncode(payload),
+              onPressed: () {
+                // Map payload = {"title": title, "description": description};
+                Item item = Item.fromJson({
+                  'title': title,
+                  'description': description,
+                  'picture': "",
+                  'upc': "No UCP",
+                  'owner': "Admin",
+                  'tag': "Others",
+                  'id': "fuygregiuhsdgisdhfgi",
+                });
+                itemList.add(item);
+                saveItems(itemList);
+                loadItems();
+                Get.snackbar(
+                  "SAA",
+                  "Item created!",
+                  icon: const Icon(Icons.close_fullscreen_outlined,
+                      color: Colors.white),
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.grey,
                 );
-                if (response.statusCode == 200) {
-                  refreshAll();
-                  Get.snackbar(
-                    "SAA",
-                    "Item created!",
-                    icon: const Icon(Icons.close_fullscreen_outlined,
-                        color: Colors.white),
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: Colors.grey,
-                  );
-                } else {
-                  Get.snackbar(
-                    "SAA",
-                    "Looks like some of your data are completely wrong or you don't have access to creation:[",
-                    icon: const Icon(Icons.error_outline_outlined,
-                        color: Colors.white),
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: Colors.grey,
-                  );
-                }
-
                 Navigator.pop(context);
               },
             ),
@@ -244,27 +179,151 @@ class HomeController extends GetxController {
     );
   }
 
-  void refreshAll() async {
-    final items = await fetchItems();
-
-    saveItems(items);
-    loadItems();
+  Widget feedContent() {
+    if (itemList.isEmpty) {
+      return Expanded(
+          child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text('List of items is empty :[', style: TextStyle(fontSize: 17)),
+          SizedBox(
+            height: 10,
+          ),
+          Divider(),
+          Text('Some useful tips:', style: TextStyle(fontSize: 14)),
+          Divider(),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(
+              'Boost your experience by adding items to your collection! Simply tap on the Plus sign or scan a QR code using the button located in the bottom right corner of the screen.',
+              style: TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Divider(),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(
+              'Once you will add some items - you will be able to see them instead this text, also you can use Search box to find something specific!',
+              style: TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Divider(),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(
+              'If you sure that here should be your stuff - try refresh the feed using Refresh button on top-right corner of the screen.',
+              style: TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Divider(),
+        ],
+      ));
+    } else {
+      return Expanded(
+        child: Obx(
+          () => ListView(
+            children: itemList.map((item) {
+              return Dismissible(
+                  key: Key(item.id), // Use a unique key for each item
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    color: Colors.red,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: const [
+                          Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                          Text(
+                            "Delete",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.right,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  onDismissed: (direction) {
+                    deleteItem(item.id);
+                  },
+                  child: ListTile(
+                    title: Text(item.title),
+                    onTap: () {
+                      Get.toNamed(
+                        Routes.DETAIL,
+                        arguments: item,
+                      );
+                    },
+                  ));
+            }).toList(),
+          ),
+        ),
+      );
+    }
   }
 
-  void clearSearch() {
-    searchController.clear();
-    loadItems();
-  }
+  scanBarcode() async {
+    try {
+      final result = await BarcodeScanner.scan();
+      scannedCode.value = result.rawContent;
+      if (scannedCode.value.isEmpty) {
+        return Get.snackbar(
+          "SAA",
+          "Looks like your UPC Barcode are wrong ;[",
+          icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.grey,
+        );
+      }
+      if (isUpcExist(staticItemList, scannedCode.value)) {
+        return Get.snackbar(
+          "SAA",
+          "Looks like this item already in your list!",
+          icon:
+              const Icon(Icons.my_library_books_outlined, color: Colors.white),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.grey,
+        );
+      }
 
-  @override
-  void onInit() async {
-    super.onInit();
-    refreshAll();
-  }
+      final product = await getItem(scannedCode.value);
 
-  @override
-  void onClose() {
-    searchController.dispose();
-    super.onClose();
+      if (product == false) {
+        print('Product not found.');
+      } else {
+        print('Product details: $product');
+      }
+
+      // if (200 == 200) {
+      //   Item item = Item.fromJson({});
+      //   return Get.snackbar(
+      //     "SAA",
+      //     "We added ${item.title} to your collection!",
+      //     icon:
+      //         const Icon(Icons.my_library_books_outlined, color: Colors.white),
+      //     snackPosition: SnackPosition.BOTTOM,
+      //     backgroundColor: Colors.grey,
+      //   );
+      // } else {
+      //   return Get.snackbar(
+      //     "SAA",
+      //     "Looks like Item are not exist or we don't have it in our DataBase, you also can try look up by search!",
+      //     icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
+      //     snackPosition: SnackPosition.BOTTOM,
+      //     backgroundColor: Colors.grey,
+      //   );
+      // }
+    } on Exception {
+      return;
+    }
   }
 }
