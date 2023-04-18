@@ -67,6 +67,12 @@ class HomeController extends GetxController {
     return data['items'][0];
   }
 
+  searchIfExist() {
+    if (searchController.text != "") {
+      searchItems(searchQuery: searchController.text);
+    }
+  }
+
   //  Items operation
 
   void saveItems(List<Item> items) {
@@ -90,9 +96,8 @@ class HomeController extends GetxController {
     saveItems(itemList);
     loadItems();
 
-    if (searchController.text != "") {
-      searchItems(searchQuery: searchController.text);
-    }
+    searchIfExist();
+
     return Get.snackbar("SAA", "Item deleted successfully!",
         icon: const Icon(Icons.delete_sweep_rounded, color: Colors.white),
         snackPosition: SnackPosition.BOTTOM,
@@ -239,9 +244,10 @@ class HomeController extends GetxController {
                   'tag': "Others",
                   'id': generateID(),
                 });
-                itemList.add(item);
-                saveItems(itemList);
+                staticItemList.add(item);
+                saveItems(staticItemList);
                 loadItems();
+                searchIfExist();
                 Get.snackbar(
                   "SAA",
                   "Item created!",
@@ -498,9 +504,10 @@ class HomeController extends GetxController {
           "upc": product["upc"],
         });
 
-        itemList.add(item);
-        saveItems(itemList);
+        staticItemList.add(item);
+        saveItems(staticItemList);
         loadItems();
+        searchIfExist();
 
         return Get.snackbar(
           "SAA",
