@@ -458,7 +458,10 @@ class HomeController extends GetxController {
           backgroundColor: Colors.grey,
         );
       }
-      if (isUpcExist(staticItemList, scannedCode.value)) {
+
+      final product = await getItem(scannedCode.value);
+
+      if (isUpcExist(staticItemList, product["upc"])) {
         return Get.snackbar(
           "SAA",
           "Looks like this item already in your list!",
@@ -468,8 +471,6 @@ class HomeController extends GetxController {
           backgroundColor: Colors.grey,
         );
       }
-
-      final product = await getItem(scannedCode.value);
 
       if (product == false) {
         return Get.snackbar(
@@ -494,7 +495,7 @@ class HomeController extends GetxController {
           "picture": picture,
           "owner": "Item",
           'tag': "Others",
-          "upc": scannedCode.value
+          "upc": product["upc"],
         });
 
         itemList.add(item);
