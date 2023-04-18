@@ -4,6 +4,7 @@ import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:get/get.dart';
 
 import 'package:stuff_accounting_app/app/internal/hex2color.dart';
+import 'package:stuff_accounting_app/app/routes/app_pages.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -44,10 +45,13 @@ class HomeView extends GetView<HomeController> {
               ),
               onTap: () => controller.showDeletionDialog(context),
             ),
-            const ListTile(
-              title: Text(
+            ListTile(
+              title: const Text(
                 'About',
               ),
+              onTap: () {
+                Get.toNamed(Routes.ABOUT);
+              },
             ),
           ],
         ),

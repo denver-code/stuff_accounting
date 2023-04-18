@@ -2,9 +2,7 @@ import 'package:get/get.dart';
 
 import '../modules/about/bindings/about_binding.dart';
 import '../modules/about/views/about_view.dart';
-import '../modules/authorisation/bindings/authorisation_binding.dart';
-import '../modules/authorisation/views/authorisation_view.dart';
-import '../modules/authorisation/views/registration_view.dart';
+
 import '../modules/detail/bindings/detail_binding.dart';
 import '../modules/detail/views/detail_view.dart';
 import '../modules/home/bindings/home_binding.dart';
@@ -22,16 +20,6 @@ class AppPages {
       name: _Paths.HOME,
       page: () => const HomeView(),
       binding: HomeBinding(),
-    ),
-    GetPage(
-      name: _Paths.AUTHORISATION,
-      page: () => const AuthorisationView(),
-      binding: AuthorisationBinding(),
-    ),
-    GetPage(
-      name: _Paths.REGISTRATION,
-      page: () => const RegistrationView(),
-      binding: AuthorisationBinding(),
     ),
     GetPage(
       name: _Paths.DETAIL,
