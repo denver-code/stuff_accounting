@@ -1,16 +1,45 @@
-# stuff_accounting_app
 
-A new Flutter project.
+# Stuff Accounting
 
-## Getting Started
+**Description**  
+soon
 
-This project is a starting point for a Flutter application.
+**What you can do now?**  
+- add new items by UPC
+- add new own items 
+- delete items
+- export collection to json
+- import collection from json
+- 
 
-A few resources to get you started if this is your first Flutter project:
+**What do I want to add in the future?**  
+soon
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Run Noto on your device from source code
+> [!NOTE]
+> For start confirm flutter instalation on your machine.
+``` Bash
+$ git clone https://github.com/denver-code/stuff_accounting
+$ cd stuff_accounting
+$ flutter pub get
+$ flutter run --release
+```
+##  Build an APK
+> [!NOTE]
+> For start confirm flutter instalation on your machine.
+``` Bash
+$ git clone https://github.com/denver-code/stuff_accounting
+$ cd stuff_accounting
+$ flutter pub get
+$ flutter build apk --split-per-abi
+```
+This commands results in three APK files:
+```
+    [project]/build/app/outputs/apk/release/app-armeabi-v7a-release.apk
+    [project]/build/app/outputs/apk/release/app-arm64-v8a-release.apk
+    [project]/build/app/outputs/apk/release/app-x86_64-release.apk
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
+## Screenshot
+![Main screen](pictures/IMG_2295.PNG)
