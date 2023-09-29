@@ -272,8 +272,8 @@ class HomeController extends GetxController {
         return CupertinoAlertDialog(
           title: const Text("DELETE ALL ITEMS?",
               style: TextStyle(color: Colors.red)),
-          content: Column(
-            children: const [
+          content: const Column(
+            children: [
               Text("ARE YOU SURE THAT YOU WANT DELETE ALL YOUR STUFF?"),
               Text("YOU WILL NOT BE ABLE TO UNDO OR CANCEL THAT PROCESS"),
             ],
@@ -321,11 +321,11 @@ class HomeController extends GetxController {
 
   Widget feedContent() {
     if (itemList.isEmpty) {
-      return Expanded(
+      return const Expanded(
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               SizedBox(
                 height: 50,
               ),
@@ -388,11 +388,11 @@ class HomeController extends GetxController {
                     direction: DismissDirection.endToStart,
                     background: Container(
                       color: Colors.red,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
+                      child: const Padding(
+                        padding: EdgeInsets.only(right: 16.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.delete,
                               color: Colors.white,
@@ -455,6 +455,7 @@ class HomeController extends GetxController {
     try {
       final result = await BarcodeScanner.scan();
       scannedCode.value = result.rawContent;
+
       if (scannedCode.value.isEmpty) {
         return Get.snackbar(
           "SAA",
@@ -465,9 +466,19 @@ class HomeController extends GetxController {
         );
       }
 
-      final product = await getItem(scannedCode.value);
-
-      if (isUpcExist(staticItemList, product["upc"])) {
+      // if upc starts with 0 and none of items with this upc then try to remove zero and check again
+      if (isUpcExist(staticItemList, scannedCode.value)) {
+        return Get.snackbar(
+          "SAA",
+          "Looks like this item already in your list!",
+          icon:
+              const Icon(Icons.my_library_books_outlined, color: Colors.white),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.grey,
+        );
+      } else if (scannedCode.value.startsWith("0") &&
+          isUpcExist(staticItemList, scannedCode.value.substring(1))) {
+        scannedCode.value = scannedCode.value.substring(1);
         return Get.snackbar(
           "SAA",
           "Looks like this item already in your list!",
@@ -477,6 +488,7 @@ class HomeController extends GetxController {
           backgroundColor: Colors.grey,
         );
       }
+      final product = await getItem(scannedCode.value);
 
       if (product == false) {
         return Get.snackbar(
@@ -501,7 +513,7 @@ class HomeController extends GetxController {
           "picture": picture,
           "owner": "Item",
           'tag': "Others",
-          "upc": product["upc"],
+          "upc": scannedCode.value,
         });
 
         staticItemList.add(item);
